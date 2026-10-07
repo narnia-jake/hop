@@ -213,11 +213,32 @@ impl DocumentSessionManager {
                 e
             )
         })?;
+        // rhwp 는 고친 구역을 다시 쓰면서 메모 본문을 버린다 (앵커는 남는다). 덮어쓰기 전에
+        // 원본에서 메모 블록을 되살린다. 아래 검증이 되살린 바이트를 다시 파싱하므로,
+        // 되살리기가 파일을 망가뜨리면 저장이 실패할 뿐 깨진 파일은 쓰이지 않는다.
+        let (bytes, memo_warnings) =
+            restore_memos_from_source(session.source_path.as_deref(), bytes);
         let core =
             editable_core_from_bytes(&bytes, "저장 바이트 검증 실패", "저장 문서 변환 실패")?;
         session.finish_hwp_save(target_path, &bytes, Some(core))?;
         let _ = std::fs::remove_file(&staged_path);
-        Ok(session.save_result())
+        let mut result = session.save_result();
+        result.warnings.extend(memo_warnings);
+        Ok(result)
+    }
+
+    /// 문서의 메모(주석). `Ok(None)` 은 읽지 못했다는 뜻이다 (암호·배포용 문서 등).
+    pub fn document_memos(&self, doc_id: &str) -> Result<Option<Vec<hop_hwp_memo::Memo>>, String> {
+        let session = self.session(doc_id)?;
+        let Some(path) = session.source_path.as_deref() else {
+            return Ok(Some(Vec::new())); // 새 문서
+        };
+        let bytes = std::fs::read(path)
+            .map_err(|e| format!("메모를 읽을 수 없습니다: {} ({})", path.display(), e))?;
+        Ok(hop_hwp_memo::extract_memos(
+            &bytes,
+            session.source_format == DocumentFormat::Hwpx,
+        ))
     }
 
     pub fn external_modification_status(
@@ -616,6 +637,48 @@ impl DocumentFormat {
             )),
         }
     }
+}
+
+/// 엔진이 저장 때 버린 메모 본문을 원본(HWP)에서 되살린다.
+///
+/// rhwp(v0.8.4·v0.8.7 실측)는 한 글자라도 고친 구역을 모델에서 다시 쓰는데 모델에 메모
+/// 목록이 없어 메모 본문이 통째로 빠진다. 본문 속 앵커는 남으므로 원본 구역 끝의 메모
+/// 블록을 그대로 다시 붙인다. 되살린 뒤에도 메모가 줄었으면 경고를 돌려준다.
+fn restore_memos_from_source(
+    source: Option<&Path>,
+    staged: Vec<u8>,
+) -> (Vec<u8>, Vec<DocumentWarning>) {
+    let Some(source) = source else {
+        return (staged, Vec::new());
+    };
+    if DocumentFormat::from_path(source).ok() != Some(DocumentFormat::Hwp) {
+        return (staged, Vec::new());
+    }
+    let Ok(original) = std::fs::read(source) else {
+        return (staged, Vec::new());
+    };
+    let before = hop_hwp_memo::extract_memos(&original, false)
+        .map(|m| m.len())
+        .unwrap_or(0);
+    if before == 0 {
+        return (staged, Vec::new());
+    }
+    let restored = hop_hwp_memo::restore_memos(&original, &staged);
+    let after = hop_hwp_memo::extract_memos(&restored.bytes, false)
+        .map(|m| m.len())
+        .unwrap_or(0);
+    let mut warnings = Vec::new();
+    if after < before {
+        warnings.push(DocumentWarning {
+            code: "memo-lost".to_string(),
+            severity: "warning".to_string(),
+            message: format!(
+                "원본의 메모 {}개 중 {}개만 저장되었습니다. 직접 지운 게 아니라면 원본을 덮어쓰지 마세요.",
+                before, after
+            ),
+        });
+    }
+    (restored.bytes, warnings)
 }
 
 pub fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {

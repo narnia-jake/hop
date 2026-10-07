@@ -26,6 +26,7 @@ import { HomeScreen } from '@/ui/home-screen';
 import type { DesktopBridgeApi } from '@/core/tauri-bridge';
 import { createCommandRuntime } from './host/command-runtime';
 import { createRendererSession } from './host/renderer-session';
+import { MemoLayer } from './memo/memo-layer';
 
 const wasm = createBridge();
 const eventBus = new EventBus();
@@ -50,6 +51,7 @@ if (import.meta.env.DEV) {
   (window as any).__documentState = documentState;
 }
 let canvasView: CanvasView | null = null;
+let memoLayer: MemoLayer | null = null;
 let inputHandler: InputHandler | null = null;
 let toolbar: Toolbar | null = null;
 let ruler: Ruler | null = null;
@@ -87,6 +89,8 @@ async function initialize(): Promise<void> {
 
     const container = document.getElementById('scroll-container')!;
     canvasView = new CanvasView(container, wasm, eventBus, rendererSession);
+    // 메모(주석) — rhwp-studio 는 그리지 않는다. 상류를 고치지 않고 바깥에서 얹는다.
+    memoLayer = new MemoLayer({ wasm, eventBus, getCanvasView: () => canvasView });
     homeScreen = new HomeScreen(container, wasm, {
       openFile: () => {
         dispatcher.dispatch('file:open');
@@ -532,6 +536,7 @@ async function initializeDocument(
     void homeScreen?.refresh(true);
     inputHandler?.deactivate();
     await canvasView?.loadDocument();
+    void memoLayer?.reload();
     toolbar?.setEnabled(true);
     toolbar?.initFontDropdown(docInfo.fontsUsed);
     toolbar?.initStyleDropdown();

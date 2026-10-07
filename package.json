@@ -1,6 +1,6 @@
 {
   "name": "hop",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "private": true,
   "description": "HOP is Open HWP",
   "license": "MIT",
@@ -12,12 +12,13 @@
     "build:before-tauri": "pnpm run build:studio && pnpm run build:quicklook:macos",
     "build:desktop": "pnpm --filter hop-desktop build",
     "tauri": "pnpm --filter hop-desktop tauri",
-    "test": "pnpm run test:upstream && pnpm run test:studio && pnpm run test:desktop && pnpm run test:quicklook:macos",
+    "test": "pnpm run test:upstream && pnpm run test:studio && pnpm run test:desktop && pnpm run test:memo && pnpm run test:quicklook:macos",
     "test:upstream": "node --test tests/update-upstream.test.mjs tests/rhwp-baseline.test.mjs tests/rhwp-boundary.test.mjs tests/hop-version.test.mjs",
     "test:studio": "pnpm --filter @golbin/hop-studio-host test",
     "test:desktop": "cd apps/desktop/src-tauri && cargo test",
+    "test:memo": "cd apps/desktop/hwp-memo && cargo test",
     "test:quicklook:macos": "node scripts/test-quicklook-macos.mjs",
-    "clippy:desktop": "cd apps/desktop/src-tauri && cargo clippy -- -D warnings",
+    "clippy:desktop": "cd apps/desktop/src-tauri && cargo clippy -- -D warnings && cd ../hwp-memo && cargo clippy --all-targets -- -D warnings",
     "upstream:update": "node scripts/update-rhwp-upstream.mjs",
     "upstream:verify": "node scripts/verify-rhwp-upstream.mjs"
   },

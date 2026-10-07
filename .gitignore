@@ -5,6 +5,7 @@ Cargo.lock
 !/apps/desktop/src-tauri/Cargo.lock
 !/apps/desktop/quicklook/rust/Cargo.lock
 apps/desktop/src-tauri/target/
+apps/desktop/hwp-memo/target/
 apps/desktop/src-tauri/gen/
 apps/desktop/quicklook/rust/target/
 

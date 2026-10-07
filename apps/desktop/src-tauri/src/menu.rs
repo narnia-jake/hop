@@ -55,6 +55,8 @@ pub fn install(app: &mut App) -> tauri::Result<()> {
     let table_split_cells =
         MenuItemBuilder::with_id("table:cell-split", "Split Cells").build(app)?;
 
+    // 한글의 '보기 › 메모' — 메모 칸 켜기/끄기 (studio-host memo-layer)
+    let memos = MenuItemBuilder::with_id("view:toggle-memos", "Show/Hide Memos").build(app)?;
     let zoom_in = MenuItemBuilder::with_id("view:zoom-in", "Zoom In")
         .accelerator("CmdOrCtrl+=")
         .build(app)?;
@@ -111,6 +113,8 @@ pub fn install(app: &mut App) -> tauri::Result<()> {
         .separator()
         .item(&fit_page)
         .item(&fit_width)
+        .separator()
+        .item(&memos)
         .build()?;
     let window_menu = SubmenuBuilder::new(app, "Window")
         .minimize()

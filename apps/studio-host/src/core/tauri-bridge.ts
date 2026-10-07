@@ -59,6 +59,17 @@ export interface DesktopSaveResult {
   warnings: unknown[];
 }
 
+/** 문서의 메모(주석) — `document_memos` 명령 (apps/desktop/hwp-memo). */
+export interface DocumentMemo {
+  id: number;
+  text: string;
+  author?: string | null;
+  sectionIdx: number;
+  paraIdx?: number | null;
+  charOffset?: number | null;
+  anchorText: string;
+}
+
 export interface RecentDocument {
   path: string;
   fileName: string;
@@ -305,6 +316,15 @@ export class TauriBridge extends WasmBridge implements DesktopBridgeApi {
     this.sourcePath = null;
     this.dirty = false;
     this.updateDocumentTitle();
+  }
+
+  /**
+   * 지금 문서의 메모. rhwp 는 메모 글을 내주지 않으므로 네이티브 쪽이 파일 바이트에서 읽는다.
+   * `null` 은 읽지 못했다는 뜻이다 (암호·배포용 문서 등). 문서가 없으면 빈 목록.
+   */
+  async documentMemos(): Promise<DocumentMemo[] | null> {
+    if (!this.docId) return [];
+    return this.invoke<DocumentMemo[] | null>('document_memos', { docId: this.docId });
   }
 
   private ensureDocumentLoaded(): string {

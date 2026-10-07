@@ -182,6 +182,19 @@ pub fn render_document_preview(path: String) -> Result<String, String> {
         .map_err(|e| format!("문서 미리보기를 렌더링할 수 없습니다: {}", e))
 }
 
+/// 문서의 메모(주석) — 에디터의 메모 층이 쓴다. `None` 은 읽지 못했다는 뜻이다.
+#[tauri::command]
+pub fn document_memos(
+    doc_id: String,
+    state: State<'_, AppState>,
+) -> Result<Option<Vec<hop_hwp_memo::Memo>>, String> {
+    state
+        .sessions
+        .lock()
+        .map_err(|_| "문서 세션 잠금 실패".to_string())?
+        .document_memos(&doc_id)
+}
+
 #[tauri::command]
 pub fn check_external_modification(
     doc_id: String,

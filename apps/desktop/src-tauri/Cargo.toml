@@ -1,6 +1,6 @@
 [package]
 name = "hop-desktop"
-version = "0.4.4"
+version = "0.5.0"
 edition = "2021"
 description = "HOP - Open HWP desktop app"
 license = "MIT"
@@ -18,6 +18,8 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 hop-rhwp-adapter = { path = "../rhwp-adapter" }
+# 메모(주석) 읽기와, 엔진이 저장 때 버리는 메모 본문 되살리기
+hop-hwp-memo = { path = "../hwp-memo" }
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2.5"

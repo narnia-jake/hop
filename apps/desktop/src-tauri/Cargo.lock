@@ -2056,8 +2056,9 @@ dependencies = [
 
 [[package]]
 name = "hop-desktop"
-version = "0.4.4"
+version = "0.5.0"
 dependencies = [
+ "hop-hwp-memo",
  "hop-rhwp-adapter",
  "objc2-app-kit",
  "objc2-foundation",
@@ -2076,6 +2077,16 @@ dependencies = [
  "tempfile",
  "usvg",
  "uuid",
+]
+
+[[package]]
+name = "hop-hwp-memo"
+version = "0.1.0"
+dependencies = [
+ "cfb 0.14.0",
+ "flate2",
+ "serde",
+ "zip 8.5.1",
 ]
 
 [[package]]
