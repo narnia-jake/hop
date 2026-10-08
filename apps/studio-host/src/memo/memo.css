@@ -112,3 +112,26 @@
   font-size: 11px;
   font-weight: 600;
 }
+
+/* 상태 표시줄 '메모 N' 토글 */
+.hop-memo-toggle {
+  margin-right: 8px;
+  padding: 1px 9px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.hop-memo-toggle[aria-pressed="true"] {
+  background: var(--hop-memo-fill);
+  border-color: var(--hop-memo-line);
+  color: var(--hop-memo-ink);
+}
+
+.hop-memo-toggle[hidden] {
+  display: none;
+}

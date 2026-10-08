@@ -19,6 +19,24 @@ import './memo.css';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const BALLOON_INSET = 12; // 메모 칸 왼쪽 끝 ~ 풍선
+/** 마지막으로 고른 보이기/숨기기를 기억한다 (창마다가 아니라 앱 전체). */
+const VISIBLE_KEY = 'hop.memos.visible';
+
+function readVisiblePreference(): boolean {
+  try {
+    return localStorage.getItem(VISIBLE_KEY) !== 'false';
+  } catch {
+    return true;
+  }
+}
+
+function writeVisiblePreference(visible: boolean): void {
+  try {
+    localStorage.setItem(VISIBLE_KEY, String(visible));
+  } catch {
+    /* 저장소를 못 쓰면 이번 실행 동안만 유지한다 */
+  }
+}
 
 interface MemoLayerDependencies {
   wasm: WasmBridge;
@@ -30,7 +48,7 @@ type MemoSource = { documentMemos?: () => Promise<DocumentMemo[] | null> };
 
 export class MemoLayer {
   private memos: DocumentMemo[] = [];
-  private visible = true;
+  private visible = readVisiblePreference();
   private placements: MemoPlacement[] = [];
   private focused: number | null = null;
   private timer: ReturnType<typeof setTimeout> | null = null;
@@ -42,6 +60,7 @@ export class MemoLayer {
   private readonly marks: HTMLDivElement;
   private readonly column: HTMLDivElement;
   private readonly columnInner: HTMLDivElement;
+  private readonly toggleButton: HTMLButtonElement;
 
   constructor(private readonly deps: MemoLayerDependencies) {
     this.editorArea = document.getElementById('editor-area')!;
@@ -57,6 +76,16 @@ export class MemoLayer {
     this.columnInner.className = 'hop-memo-column-inner';
     this.column.append(this.columnInner);
     this.editorArea.append(this.column);
+
+    // 상태 표시줄의 '메모 N' 버튼 — 메뉴(View › Show/Hide Memos)와 같은 동작
+    this.toggleButton = document.createElement('button');
+    this.toggleButton.type = 'button';
+    this.toggleButton.className = 'hop-memo-toggle';
+    this.toggleButton.title = '메모 보이기/숨기기';
+    this.toggleButton.hidden = true;
+    this.toggleButton.addEventListener('click', () => this.toggle());
+    const right = document.querySelector('#status-bar .stb-right');
+    right?.prepend(this.toggleButton);
 
     this.container.addEventListener('scroll', () => this.syncScroll(), { passive: true });
     const later = () => this.schedule();
@@ -93,6 +122,7 @@ export class MemoLayer {
 
   toggle(force?: boolean): void {
     this.visible = force ?? !this.visible;
+    writeVisiblePreference(this.visible);
     this.applyVisibility();
     this.schedule(0);
   }
@@ -108,6 +138,9 @@ export class MemoLayer {
   private applyVisibility(): void {
     // 칸이 생기거나 사라지면 스크롤 영역 폭이 바뀌고, 에디터가 viewport-resize 로 다시 잰다.
     this.editorArea.classList.toggle('hop-memos', this.isVisible);
+    this.toggleButton.hidden = this.memos.length === 0;
+    this.toggleButton.textContent = `메모 ${this.memos.length}`;
+    this.toggleButton.setAttribute('aria-pressed', String(this.visible));
   }
 
   private schedule(delay = 120): void {
