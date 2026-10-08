@@ -53,6 +53,18 @@ describe('layoutMemos', () => {
     expect(doc.calls[0]).toBe('path:0,43,[{"controlIndex":0,"cellIndex":3,"cellParaIndex":5}],5,0,5,37');
   });
 
+  it('uses the anchor location that comes with engine memos', () => {
+    const doc = fakeDoc({ getFieldList: () => { throw new Error('not needed'); } });
+    const [placed] = layoutMemos(doc, [memo({
+      id: 6,
+      location: { sectionIndex: 0, paraIndex: 12, path: [{ type: 'cell', controlIndex: 1, cellIndex: 2, paraIndex: 0 }] },
+      startCharIdx: 3,
+      endCharIdx: 8,
+    })]);
+    expect(placed.how).toBe('field');
+    expect(doc.calls[0]).toBe('path:0,12,[{"controlIndex":1,"cellIndex":2,"cellParaIndex":0}],0,3,0,8');
+  });
+
   it('falls back to searching the anchor text in the same top-level paragraph', () => {
     // 문단을 넘어가는 메모는 getFieldList 에 안 나온다
     const doc = fakeDoc({

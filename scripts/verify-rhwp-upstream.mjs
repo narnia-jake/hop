@@ -38,7 +38,8 @@ export async function verifyRhwpUpstream() {
     'submodule origin must match the provenance source',
   );
   assert.match(lock.version, /^\d+\.\d+\.\d+$/);
-  assert.equal(lock.tag, `v${lock.version}`);
+  // 포크 태그는 vX.Y.Z-hop.N (상류 vX.Y.Z 위에 HOP 패치)
+  assert.match(lock.tag, new RegExp(`^v${lock.version.replaceAll('.', '\\.')}(-hop\\.\\d+)?$`));
   assert.match(lock.commit, /^[0-9a-f]{40}$/);
   assert.equal(currentUpstreamCommit(), lock.commit, 'submodule checkout must match upstream lock');
 

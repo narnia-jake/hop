@@ -56,6 +56,7 @@ export const hwpdocument_deleteControlAt: (a: number, b: number, c: number, d: n
 export const hwpdocument_deleteEquationControl: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_deleteFootnote: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_deleteHeaderFooter: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+export const hwpdocument_deleteMemo: (a: number, b: number) => [number, number, number, number];
 export const hwpdocument_deleteParagraph: (a: number, b: number, c: number) => [number, number, number, number];
 export const hwpdocument_deletePictureControl: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_deleteRange: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
@@ -176,6 +177,7 @@ export const hwpdocument_getLineInfo: (a: number, b: number, c: number, d: numbe
 export const hwpdocument_getLineInfoInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
 export const hwpdocument_getLineStarts: (a: number, b: number, c: number) => [number, number];
 export const hwpdocument_getLogicalLength: (a: number, b: number, c: number) => [number, number, number];
+export const hwpdocument_getMemoList: (a: number) => [number, number];
 export const hwpdocument_getNoteEditInfo: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_getNoteEquationProperties: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
 export const hwpdocument_getNumberingList: (a: number) => [number, number];
@@ -270,6 +272,7 @@ export const hwpdocument_insertEndnote: (a: number, b: number, c: number, d: num
 export const hwpdocument_insertEquation: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
 export const hwpdocument_insertFieldInHf: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
 export const hwpdocument_insertFootnote: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+export const hwpdocument_insertMemo: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number) => [number, number, number, number];
 export const hwpdocument_insertNewNumber: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
 export const hwpdocument_insertPageBreak: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_insertParagraph: (a: number, b: number, c: number) => [number, number, number, number];
@@ -417,6 +420,7 @@ export const hwpdocument_transposeTableCellsInPlace: (a: number, b: number, c: n
 export const hwpdocument_ungroupShape: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_updateClickHereProps: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number];
 export const hwpdocument_updateConnectorsInSection: (a: number, b: number) => void;
+export const hwpdocument_updateMemo: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_updateStyle: (a: number, b: number, c: number, d: number) => number;
 export const hwpdocument_updateStyleShapes: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
 export const hwpviewer_new: (a: number) => number;

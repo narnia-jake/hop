@@ -182,6 +182,15 @@ pub fn render_document_preview(path: String) -> Result<String, String> {
         .map_err(|e| format!("문서 미리보기를 렌더링할 수 없습니다: {}", e))
 }
 
+/// 새 메모의 작성자 이름 — OS 사용자 이름 (한글도 메모 작성자를 사용자 이름으로 채운다).
+#[tauri::command]
+pub fn current_user_name() -> String {
+    ["USERNAME", "USER", "LOGNAME"]
+        .iter()
+        .find_map(|key| std::env::var(key).ok().filter(|v| !v.trim().is_empty()))
+        .unwrap_or_default()
+}
+
 /// 문서의 메모(주석) — 에디터의 메모 층이 쓴다. `None` 은 읽지 못했다는 뜻이다.
 #[tauri::command]
 pub fn document_memos(

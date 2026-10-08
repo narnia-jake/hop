@@ -68,6 +68,46 @@ export interface DocumentMemo {
   paraIdx?: number | null;
   charOffset?: number | null;
   anchorText: string;
+  /** 작성 시각 (unix ms) — 엔진 목록에만 있다. */
+  createdAt?: number | null;
+  /** 앵커 위치 (getFieldList 와 같은 꼴) — 엔진 목록에만 있다. */
+  location?: MemoLocation | null;
+  startCharIdx?: number;
+  endCharIdx?: number;
+}
+
+export interface MemoLocation {
+  sectionIndex: number;
+  paraIndex: number;
+  path?: Array<{ type?: string; controlIndex: number; cellIndex?: number; paraIndex: number }>;
+}
+
+/** 새 메모를 달 자리 — 한 문단 안의 글자 범위. 셀 안이면 cellPath 가 있다. */
+export interface MemoTarget {
+  sectionIdx: number;
+  paraIdx: number;
+  cellPath: Array<{ controlIndex: number; cellIndex: number; cellParaIndex: number }>;
+  start: number;
+  end: number;
+}
+
+interface EngineMemo {
+  id: number;
+  text: string;
+  author: string | null;
+  createdAt: number | null;
+  location: MemoLocation | null;
+  startCharIdx: number;
+  endCharIdx: number;
+  anchorText: string;
+}
+
+/** 포크한 rhwp 엔진의 메모 API (third_party/rhwp hop-memos). */
+interface EngineMemoApi {
+  getMemoList(): string;
+  insertMemo(sec: number, para: number, cellPathJson: string, start: number, end: number, text: string, author: string): string;
+  updateMemo(id: number, text: string): string;
+  deleteMemo(id: number): string;
 }
 
 export interface RecentDocument {
@@ -325,6 +365,64 @@ export class TauriBridge extends WasmBridge implements DesktopBridgeApi {
   async documentMemos(): Promise<DocumentMemo[] | null> {
     if (!this.docId) return [];
     return this.invoke<DocumentMemo[] | null>('document_memos', { docId: this.docId });
+  }
+
+  /** 엔진 문서 객체의 메모 API. 메모 API 가 없는 엔진이거나 문서가 없으면 null. */
+  private memoApi(): EngineMemoApi | null {
+    // WasmBridge 의 엔진 문서는 private 필드다. 메모 API 는 상류 WasmBridge 에 래퍼가 없어 직접 쓴다.
+    const doc = (this as unknown as { doc?: Partial<EngineMemoApi> | null }).doc;
+    return doc && typeof doc.getMemoList === 'function' ? (doc as EngineMemoApi) : null;
+  }
+
+  /** 엔진이 아는 메모 (편집 중 바뀐 것까지). 엔진에 메모 API 가 없으면 null. */
+  engineMemos(): DocumentMemo[] | null {
+    const api = this.memoApi();
+    if (!api) return null;
+    const list = JSON.parse(api.getMemoList()) as EngineMemo[];
+    return list.map((m) => ({
+      id: m.id,
+      text: m.text,
+      author: m.author,
+      createdAt: m.createdAt,
+      sectionIdx: m.location?.sectionIndex ?? 0,
+      paraIdx: m.location?.paraIndex ?? null,
+      charOffset: m.location && !m.location.path?.length ? m.startCharIdx : null,
+      anchorText: m.anchorText,
+      location: m.location,
+      startCharIdx: m.startCharIdx,
+      endCharIdx: m.endCharIdx,
+    }));
+  }
+
+  /** 메모를 단다. 새 메모 번호를 돌려준다. */
+  insertMemo(target: MemoTarget, text: string, author: string): number {
+    const api = this.requireMemoApi();
+    const result = JSON.parse(api.insertMemo(
+      target.sectionIdx, target.paraIdx, JSON.stringify(target.cellPath), target.start, target.end, text, author,
+    )) as { id: number };
+    this.markDocumentDirty();
+    return result.id;
+  }
+
+  updateMemo(id: number, text: string): void {
+    this.requireMemoApi().updateMemo(id, text);
+    this.markDocumentDirty();
+  }
+
+  deleteMemo(id: number): void {
+    this.requireMemoApi().deleteMemo(id);
+    this.markDocumentDirty();
+  }
+
+  /** 새 메모의 작성자 이름 (OS 사용자 이름). 모르면 빈 문자열. */
+  async memoAuthor(): Promise<string> {
+    return this.invoke<string>('current_user_name').catch(() => '');
+  }
+
+  private requireMemoApi(): EngineMemoApi {
+    const api = this.memoApi();
+    if (!api) throw new Error('이 엔진은 메모 편집을 지원하지 않습니다');
+    return api;
   }
 
   private ensureDocumentLoaded(): string {

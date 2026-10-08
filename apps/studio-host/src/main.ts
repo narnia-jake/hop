@@ -90,7 +90,12 @@ async function initialize(): Promise<void> {
     const container = document.getElementById('scroll-container')!;
     canvasView = new CanvasView(container, wasm, eventBus, rendererSession);
     // 메모(주석) — rhwp-studio 는 그리지 않는다. 상류를 고치지 않고 바깥에서 얹는다.
-    memoLayer = new MemoLayer({ wasm, eventBus, getCanvasView: () => canvasView });
+    memoLayer = new MemoLayer({
+      wasm,
+      eventBus,
+      getCanvasView: () => canvasView,
+      getInputHandler: () => inputHandler,
+    });
     homeScreen = new HomeScreen(container, wasm, {
       openFile: () => {
         dispatcher.dispatch('file:open');

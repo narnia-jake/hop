@@ -16,7 +16,8 @@ export const cargoRoots = [
   join(repoRoot, 'apps/desktop/src-tauri'),
   join(repoRoot, 'apps/desktop/quicklook/rust'),
 ];
-export const officialUpstreamSource = 'https://github.com/edwardkim/rhwp';
+// HOP 포크는 메모 편집을 넣은 rhwp 포크(edwardkim/rhwp 의 v0.8.4 위 hop-memos 브랜치)를 쓴다.
+export const officialUpstreamSource = 'https://github.com/narnia-jake/rhwp';
 
 export const generatedArtifactNames = [
   'rhwp_bg.wasm',

@@ -25,7 +25,7 @@ use tauri::{AppHandle, Emitter, Manager};
 use commands::{
     cancel_app_quit, check_external_modification, clear_recent_documents, close_document,
     commit_staged_hwp_save, create_document, create_editor_window, desktop_platform,
-    destroy_current_window, document_memos, export_pdf, export_pdf_from_hwp_path, list_local_fonts,
+    current_user_name, destroy_current_window, document_memos, export_pdf, export_pdf_from_hwp_path, list_local_fonts,
     list_recent_documents, mark_document_dirty, mutate_document, note_finder_recent_document,
     open_document_tracking, prepare_document_open, prepare_staged_hwp_pdf_export,
     prepare_staged_hwp_save, print_webview, query_document, read_local_font,
@@ -101,6 +101,7 @@ pub fn run() {
             commit_staged_hwp_save,
             check_external_modification,
             document_memos,
+            current_user_name,
             take_pending_open_paths,
             reveal_in_folder,
             list_recent_documents,

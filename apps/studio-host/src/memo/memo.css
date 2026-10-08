@@ -105,12 +105,97 @@
   box-shadow: 0 0 0 2px var(--hop-memo-line), 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
-.hop-memo-meta {
-  display: block;
+.hop-memo-head {
+  display: flex;
+  align-items: center;
+  gap: 2px;
   margin-bottom: 3px;
+  white-space: nowrap;
+}
+
+.hop-memo-meta {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--hop-memo-meta);
   font-size: 11px;
   font-weight: 600;
+}
+
+.hop-memo-icon {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--hop-memo-meta);
+  font: 13px/18px sans-serif;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.hop-memo-balloon:hover .hop-memo-icon,
+.hop-memo-balloon.is-focus .hop-memo-icon,
+.hop-memo-icon:focus-visible {
+  opacity: 1;
+}
+
+.hop-memo-icon:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--hop-memo-ink);
+}
+
+.hop-memo-input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 54px;
+  padding: 4px 5px;
+  border: 1px solid var(--hop-memo-line);
+  border-radius: 2px;
+  background: #fffdf0;
+  color: var(--hop-memo-ink);
+  font: inherit;
+  resize: vertical;
+}
+
+.hop-memo-input:focus {
+  outline: 2px solid rgba(214, 164, 0, 0.35);
+}
+
+.hop-memo-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.hop-memo-button {
+  padding: 2px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  background: #fff;
+  color: var(--hop-memo-ink);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.hop-memo-button.is-primary {
+  border-color: var(--hop-memo-line);
+  background: var(--hop-memo-line);
+  color: #fff;
+}
+
+.hop-memo-balloon.is-editing {
+  cursor: default;
+  white-space: normal;
+}
+
+.hop-memo-text {
+  white-space: pre-wrap;
 }
 
 /* 상태 표시줄 '메모 N' 토글 */

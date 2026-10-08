@@ -280,6 +280,10 @@ export class HwpDocument {
      * 머리말/꼬리말을 삭제한다 (컨트롤 자체 제거).
      */
     deleteHeaderFooter(section_idx: number, is_header: boolean, apply_to: number): string;
+    /**
+     * 메모를 지운다 (걸려 있던 글자는 남는다). 반환 `{"ok":true}`.
+     */
+    deleteMemo(id: number): string;
     deleteParagraph(section_idx: number, para_idx: number): string;
     /**
      * 그림 컨트롤을 문단에서 삭제한다.
@@ -905,6 +909,13 @@ export class HwpDocument {
      */
     getLogicalLength(section_idx: number, para_idx: number): number;
     /**
+     * 메모(주석) 목록.
+     *
+     * 반환: `[{id, text, author, createdAt, location, startCharIdx, endCharIdx, anchorText}]`
+     * — `location` 은 `getFieldList` 와 같은 꼴(셀 안이면 `path`), 메모 번호 순.
+     */
+    getMemoList(): string;
+    /**
      * 각주/미주 편집 모드 진입 대상 조회
      */
     getNoteEditInfo(section_idx: number, para_idx: number, control_idx: number): string;
@@ -1417,6 +1428,14 @@ export class HwpDocument {
      * 각주를 삽입한다.
      */
     insertFootnote(section_idx: number, para_idx: number, char_offset: number): string;
+    /**
+     * 한 문단 안의 글자 범위 `[startCharIdx, endCharIdx)` 에 메모를 단다.
+     *
+     * `cellPathJson` 이 빈 문자열/`"[]"` 이면 본문 문단 `paraIdx`, 아니면 그 문단 안
+     * 셀 경로(`[{controlIndex, cellIndex, cellParaIndex}]`). 작성 시각은 지금.
+     * 반환: `{"ok":true,"id":N,"startCharIdx":s,"endCharIdx":e}`
+     */
+    insertMemo(section_idx: number, para_idx: number, cell_path_json: string, start_char_idx: number, end_char_idx: number, text: string, author: string): string;
     /**
      * 새 번호 지정 컨트롤 삽입 (쪽 > 새 번호로 시작)
      */
@@ -2210,6 +2229,10 @@ export class HwpDocument {
      */
     updateConnectorsInSection(section_idx: number): void;
     /**
+     * 메모 글을 바꾼다. 반환 `{"ok":true}`.
+     */
+    updateMemo(id: number, text: string): string;
+    /**
      * 스타일의 메타 정보(이름/영문이름/nextStyleId)를 수정한다.
      *
      * json: {"name":"...", "englishName":"...", "nextStyleId":0}
@@ -2341,6 +2364,7 @@ export interface InitOutput {
     readonly hwpdocument_deleteEquationControl: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_deleteFootnote: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_deleteHeaderFooter: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly hwpdocument_deleteMemo: (a: number, b: number) => [number, number, number, number];
     readonly hwpdocument_deleteParagraph: (a: number, b: number, c: number) => [number, number, number, number];
     readonly hwpdocument_deletePictureControl: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_deleteRange: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
@@ -2461,6 +2485,7 @@ export interface InitOutput {
     readonly hwpdocument_getLineInfoInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
     readonly hwpdocument_getLineStarts: (a: number, b: number, c: number) => [number, number];
     readonly hwpdocument_getLogicalLength: (a: number, b: number, c: number) => [number, number, number];
+    readonly hwpdocument_getMemoList: (a: number) => [number, number];
     readonly hwpdocument_getNoteEditInfo: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_getNoteEquationProperties: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
     readonly hwpdocument_getNumberingList: (a: number) => [number, number];
@@ -2555,6 +2580,7 @@ export interface InitOutput {
     readonly hwpdocument_insertEquation: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
     readonly hwpdocument_insertFieldInHf: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
     readonly hwpdocument_insertFootnote: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly hwpdocument_insertMemo: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number) => [number, number, number, number];
     readonly hwpdocument_insertNewNumber: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_insertPageBreak: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_insertParagraph: (a: number, b: number, c: number) => [number, number, number, number];
@@ -2702,6 +2728,7 @@ export interface InitOutput {
     readonly hwpdocument_ungroupShape: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_updateClickHereProps: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number];
     readonly hwpdocument_updateConnectorsInSection: (a: number, b: number) => void;
+    readonly hwpdocument_updateMemo: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_updateStyle: (a: number, b: number, c: number, d: number) => number;
     readonly hwpdocument_updateStyleShapes: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
     readonly hwpviewer_new: (a: number) => number;

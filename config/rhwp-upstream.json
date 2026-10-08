@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "source": "https://github.com/edwardkim/rhwp",
+  "source": "https://github.com/narnia-jake/rhwp",
   "version": "0.8.4",
-  "tag": "v0.8.4",
-  "commit": "496333b27d21ddb9114ba9ae340bcb895870c9a7",
+  "tag": "v0.8.4-hop.1",
+  "commit": "de621f6e669ef26d2aab25551134717b6271e3d1",
   "rustToolchain": "1.93.1",
   "wasmPackVersion": "0.14.0",
   "cargoPatches": {

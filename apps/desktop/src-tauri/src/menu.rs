@@ -57,6 +57,8 @@ pub fn install(app: &mut App) -> tauri::Result<()> {
 
     // 한글의 '보기 › 메모' — 메모 칸 켜기/끄기 (studio-host memo-layer)
     let memos = MenuItemBuilder::with_id("view:toggle-memos", "Show/Hide Memos").build(app)?;
+    // 한글의 '입력 › 메모' — 선택한 글자에 메모 달기
+    let new_memo = MenuItemBuilder::with_id("insert:memo", "New Memo").build(app)?;
     let zoom_in = MenuItemBuilder::with_id("view:zoom-in", "Zoom In")
         .accelerator("CmdOrCtrl+=")
         .build(app)?;
@@ -99,6 +101,8 @@ pub fn install(app: &mut App) -> tauri::Result<()> {
         .item(&paste)
         .separator()
         .item(&find)
+        .separator()
+        .item(&new_memo)
         .build()?;
     let table_menu = SubmenuBuilder::new(app, "Table")
         .item(&table_select_cells)

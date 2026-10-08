@@ -1,9 +1,10 @@
 // 메모가 본문 어디에 걸려 있는지, 쪽 좌표(96dpi CSS px)로 구한다.
 //
-// rhwp 는 메모를 그리지 않는다. 메모 '글' 은 네이티브(apps/desktop/hwp-memo)가 파일에서 읽어
-// 주고, 여기서는 '어디에' 를 지금 문서에서 매번 새로 구한다 — 편집으로 글이 밀려도 따라간다.
+// rhwp 는 메모를 그리지 않는다. 메모 목록은 엔진(getMemoList, 포크한 rhwp)에서 — 없으면
+// 네이티브(apps/desktop/hwp-memo)가 파일에서 읽어 — 받고, 여기서는 '어디에' 를 쪽 좌표로 바꾼다.
 // DOM 은 건드리지 않는다.
 //
+//   0) 엔진 목록이면 메모에 앵커 위치(location·글자 범위)가 같이 온다. 그대로 쓴다.
 //   1) getFieldList() 의 MEMO 필드 — 셀 경로·글자 범위까지 정확하다.
 //      다만 한 문단 안에서 끝나는 필드만 나온다.
 //   2) 문단을 넘어가는 메모는 1) 에 없다. 네이티브가 준 앵커 글자로 searchAllText 를 돌려
@@ -29,7 +30,7 @@ export interface MemoPlacement {
 
 interface FieldEntry {
   command: string;
-  location: { sectionIndex: number; paraIndex: number; path?: Array<{ controlIndex: number; cellIndex: number; paraIndex: number }> };
+  location: { sectionIndex: number; paraIndex: number; path?: Array<{ controlIndex: number; cellIndex?: number; paraIndex: number }> };
   startCharIdx?: number;
   endCharIdx?: number;
 }
@@ -66,7 +67,7 @@ function rectsForField(doc: MemoDocument, field: FieldEntry): MemoRect[] {
   // getFieldList 는 paraIndex 로 주고 rect API 는 cellParaIndex 로 받는다.
   const rectPath = path.map((step) => ({
     controlIndex: step.controlIndex,
-    cellIndex: step.cellIndex,
+    cellIndex: step.cellIndex ?? 0,
     cellParaIndex: step.paraIndex,
   }));
   return doc.getSelectionRectsInCellByPath(
@@ -118,7 +119,9 @@ export function layoutMemos(doc: MemoDocument, memos: readonly DocumentMemo[]): 
     let rects: MemoRect[] = [];
     let how: MemoPlacement['how'] = 'none';
     try {
-      const field = fields.get(memo.id);
+      const field: FieldEntry | undefined = memo.location
+        ? { command: '', location: memo.location, startCharIdx: memo.startCharIdx, endCharIdx: memo.endCharIdx }
+        : fields.get(memo.id);
       if (field) {
         rects = rectsForField(doc, field);
         how = 'field';

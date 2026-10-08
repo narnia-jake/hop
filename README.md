@@ -5,13 +5,17 @@
 > **이 저장소는 [golbin/hop](https://github.com/golbin/hop) 의 포크입니다 — 메모(주석) 지원을 더했습니다.**
 >
 > - **메모가 한글처럼 보입니다.** 오른쪽 메모 칸에 풍선, 걸린 글자에 형광, 둘을 점선으로 잇습니다.
->   `View › Show/Hide Memos` 로 켜고 끕니다. (rhwp-studio 는 메모를 그리지 않습니다)
-> - **편집 후 저장해도 메모가 남습니다.** rhwp(v0.8.4·v0.8.7 실측)는 문서를 한 글자라도 고치고
->   HWP 로 저장하면 메모 본문을 통째로 버립니다. 저장 직전에 원본에서 되살립니다.
+>   상태 표시줄의 `메모 N` 단추나 `View › Show/Hide Memos` 로 켜고 끕니다.
+> - **메모를 달고, 고치고, 지웁니다.** 글자를 고르고 `Edit › New Memo` (또는 상태 표시줄 `+ 메모`).
+>   풍선을 두 번 누르거나 ✎ 로 고치고, × 로 지웁니다. `Ctrl+Enter` 저장, `Esc` 취소, `Ctrl+Z` 로 되돌립니다.
+> - **편집 후 저장해도 메모가 남습니다.** 상류 rhwp(v0.8.4·v0.8.7 실측)는 문서를 한 글자라도 고치고
+>   HWP 로 저장하면 메모 본문을 통째로 버립니다.
 > - 자동 업데이트는 이 포크의 릴리스만, 이 포크의 서명 키로만 받습니다 (원본으로 덮어쓰이지 않게).
 >
-> 구현: `apps/desktop/hwp-memo` (Rust — 메모 읽기·되살리기), `apps/studio-host/src/memo` (메모 칸),
-> 저장 경로 `state.rs::restore_memos_from_source`. rhwp 서브모듈은 고치지 않았습니다.
+> 구현: rhwp 서브모듈을 [narnia-jake/rhwp](https://github.com/narnia-jake/rhwp) `hop-memos` 브랜치
+> (`v0.8.4-hop.N` 태그)로 바꿔 엔진이 메모 본문을 모델로 읽고 쓰게 했습니다 (`src/model/memo.rs`,
+> `src/document_core/queries/memo_query.rs`, WASM `getMemoList`/`insertMemo`/`updateMemo`/`deleteMemo`).
+> 화면은 `apps/studio-host/src/memo`, 저장 직전 안전망은 `apps/desktop/hwp-memo` (원본에서 되살리기).
 
 HOP는 HWP/HWPX 문서를 보고 편집할 수 있는 오픈소스 macOS, Windows, Linux용 데스크탑 앱입니다.
 
