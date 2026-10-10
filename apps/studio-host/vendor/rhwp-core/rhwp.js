@@ -9132,6 +9132,32 @@ export class HwpDocument {
         }
     }
     /**
+     * 메모 작성자를 바꾼다. 반환 `{"ok":true}`.
+     * @param {number} id
+     * @param {string} author
+     * @returns {string}
+     */
+    setMemoAuthor(id, author) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(author, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_setMemoAuthor(this.__wbg_ptr, id, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * 각주/미주 내부 수식 컨트롤의 속성을 변경한다.
      * @param {string} kind
      * @param {number} section_idx

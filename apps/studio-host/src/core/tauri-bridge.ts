@@ -108,6 +108,7 @@ interface EngineMemoApi {
   insertMemo(sec: number, para: number, cellPathJson: string, start: number, end: number, text: string, author: string): string;
   updateMemo(id: number, text: string): string;
   deleteMemo(id: number): string;
+  setMemoAuthor(id: number, author: string): string;
 }
 
 export interface RecentDocument {
@@ -406,6 +407,11 @@ export class TauriBridge extends WasmBridge implements DesktopBridgeApi {
 
   updateMemo(id: number, text: string): void {
     this.requireMemoApi().updateMemo(id, text);
+    this.markDocumentDirty();
+  }
+
+  setMemoAuthor(id: number, author: string): void {
+    this.requireMemoApi().setMemoAuthor(id, author);
     this.markDocumentDirty();
   }
 

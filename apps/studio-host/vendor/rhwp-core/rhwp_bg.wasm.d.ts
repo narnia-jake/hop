@@ -380,6 +380,7 @@ export const hwpdocument_setFormValue: (a: number, b: number, c: number, d: numb
 export const hwpdocument_setFormValueInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
 export const hwpdocument_setFormValueInCellEx: (a: number, b: number, c: number) => [number, number, number, number];
 export const hwpdocument_setHeaderFooterPictureProperties: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
+export const hwpdocument_setMemoAuthor: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_setNoteEquationProperties: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => [number, number, number, number];
 export const hwpdocument_setNoteEquationPropertiesEx: (a: number, b: number, c: number) => [number, number, number, number];
 export const hwpdocument_setNumberingRestart: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];

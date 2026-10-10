@@ -2,26 +2,26 @@
   "schemaVersion": 1,
   "source": "https://github.com/narnia-jake/rhwp",
   "version": "0.8.4",
-  "tag": "v0.8.4-hop.1",
-  "commit": "de621f6e669ef26d2aab25551134717b6271e3d1",
+  "tag": "v0.8.4-hop.2",
+  "commit": "fa94f1b5d563e56d28a495bb5a2e8871cebc7360",
   "rustToolchain": "1.93.1",
   "wasmPackVersion": "0.14.0",
   "artifacts": {
     "rhwp_bg.wasm": {
-      "bytes": 8104900,
-      "sha256": "032a7456767ec6b72cef4fcba7549e81924fc0491409adf1a138cc7915202b19"
+      "bytes": 8106309,
+      "sha256": "b74ce5e680e48a0f6ded51c1d89265e284023cbeb2452ac74feca46b7fc07860"
     },
     "rhwp.js": {
-      "bytes": 408839,
-      "sha256": "08b39cc8d1b04b1f031500d7b452b0faf5869bf6e9d3c8fa65642f6b4818e19d"
+      "bytes": 409730,
+      "sha256": "78be2e84b2b4f28469fa50fdc291be62f55fd2361c7a219023e1fbf859ca3e8a"
     },
     "rhwp.d.ts": {
-      "bytes": 163149,
-      "sha256": "fd945951cafac6c29ced76987b72df44f03ba47f263f4792c223f46060c43f0c"
+      "bytes": 163402,
+      "sha256": "e10679b7d761712245d966873032f4ffbf54e725655e89e16e58b22816b22d35"
     },
     "rhwp_bg.wasm.d.ts": {
-      "bytes": 54930,
-      "sha256": "cdb05e7b4b44c0c4aebde2aaab6b0893069e54ebbdd3bf933077ec10c8abb061"
+      "bytes": 55052,
+      "sha256": "ebd18e208cf470f5e955cc93e912a31cba1bc93717d8b559aa2190ec23f6cfcf"
     },
     "package.json": {
       "bytes": 414,

@@ -147,6 +147,25 @@
   color: var(--hop-memo-ink);
 }
 
+.hop-memo-author {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 4px;
+  padding: 2px 5px;
+  border: 1px solid rgba(214, 164, 0, 0.6);
+  border-radius: 2px;
+  background: #fffdf0;
+  color: var(--hop-memo-meta);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.hop-memo-author:focus {
+  outline: 2px solid rgba(214, 164, 0, 0.35);
+}
+
 .hop-memo-input {
   display: block;
   box-sizing: border-box;

@@ -2025,6 +2025,10 @@ export class HwpDocument {
      */
     setHeaderFooterPictureProperties(section_idx: number, outer_para_idx: number, outer_control_idx: number, inner_para_idx: number, inner_control_idx: number, props_json: string): string;
     /**
+     * 메모 작성자를 바꾼다. 반환 `{"ok":true}`.
+     */
+    setMemoAuthor(id: number, author: string): string;
+    /**
      * 각주/미주 내부 수식 컨트롤의 속성을 변경한다.
      */
     setNoteEquationProperties(kind: string, section_idx: number, parent_para_idx: number, note_control_idx: number, note_para_idx: number, inner_control_idx: number, props_json: string): string;
@@ -2688,6 +2692,7 @@ export interface InitOutput {
     readonly hwpdocument_setFormValueInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
     readonly hwpdocument_setFormValueInCellEx: (a: number, b: number, c: number) => [number, number, number, number];
     readonly hwpdocument_setHeaderFooterPictureProperties: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
+    readonly hwpdocument_setMemoAuthor: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_setNoteEquationProperties: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => [number, number, number, number];
     readonly hwpdocument_setNoteEquationPropertiesEx: (a: number, b: number, c: number) => [number, number, number, number];
     readonly hwpdocument_setNumberingRestart: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];

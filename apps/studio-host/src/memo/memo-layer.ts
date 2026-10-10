@@ -28,6 +28,24 @@ const BALLOON_INSET = 12; // 메모 칸 왼쪽 끝 ~ 풍선
 const VISIBLE_KEY = 'hop.memos.visible';
 /** 아직 엔진에 없는 새 메모(초안)의 번호. */
 const DRAFT_ID = -1;
+/** 새 메모 작성자 — 사용자가 마지막으로 쓴 이름. 없으면 OS 사용자 이름. */
+const AUTHOR_KEY = 'hop.memos.author';
+
+function readAuthorPreference(): string | null {
+  try {
+    return localStorage.getItem(AUTHOR_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeAuthorPreference(author: string): void {
+  try {
+    localStorage.setItem(AUTHOR_KEY, author);
+  } catch {
+    /* 저장소를 못 쓰면 이번 실행 동안만 유지한다 */
+  }
+}
 
 function readVisiblePreference(): boolean {
   try {
@@ -59,6 +77,7 @@ interface MemoSource {
   engineMemos?: () => DocumentMemo[] | null;
   insertMemo?: (target: MemoTarget, text: string, author: string) => number;
   updateMemo?: (id: number, text: string) => void;
+  setMemoAuthor?: (id: number, author: string) => void;
   deleteMemo?: (id: number) => void;
   memoAuthor?: () => Promise<string>;
 }
@@ -73,7 +92,10 @@ interface MemoLayerDependencies {
 interface Editing {
   id: number;
   value: string;
+  author: string;
   target?: MemoTarget;
+  /** 다시 그린 뒤 포커스를 돌려줄 칸 */
+  field?: 'author' | 'text';
 }
 
 export class MemoLayer {
@@ -133,6 +155,7 @@ export class MemoLayer {
     });
     deps.eventBus.on(TOGGLE_MEMOS_EVENT, () => this.toggle());
     deps.eventBus.on(NEW_MEMO_EVENT, () => this.startNewMemo());
+    void this.loadDefaultAuthor();
     this.applyVisibility();
   }
 
@@ -230,7 +253,7 @@ export class MemoLayer {
       console.warn('[memo] 글상자 안에는 아직 메모를 달 수 없습니다');
       return;
     }
-    this.editing = { id: DRAFT_ID, value: '', target };
+    this.editing = { id: DRAFT_ID, value: '', author: this.author ?? '', target };
     this.focused = DRAFT_ID;
     this.applyVisibility();
     this.schedule(0);
@@ -238,7 +261,7 @@ export class MemoLayer {
 
   private startEdit(memo: DocumentMemo): void {
     if (!this.canEdit) return;
-    this.editing = { id: memo.id, value: memo.text };
+    this.editing = { id: memo.id, value: memo.text, author: memo.author ?? '' };
     this.focused = memo.id;
     this.schedule(0);
   }
@@ -256,18 +279,28 @@ export class MemoLayer {
     const text = editing.value.replace(/\s+$/, '');
     this.editing = null;
     try {
+      const author = editing.author.trim();
       if (editing.id === DRAFT_ID) {
         if (text && editing.target) {
-          const author = await this.memoAuthor();
           const target = editing.target;
+          this.rememberAuthor(author);
           this.run('insertMemo', () => {
             this.focused = this.source.insertMemo!(target, text, author);
           });
         }
       } else {
         const before = this.memos.find((m) => m.id === editing.id);
+        const textChanged = before !== undefined && before.text !== text;
+        const authorChanged = before !== undefined && (before.author ?? '') !== author
+          && typeof this.source.setMemoAuthor === 'function';
         if (!text) this.run('deleteMemo', () => this.source.deleteMemo!(editing.id));
-        else if (before && before.text !== text) this.run('updateMemo', () => this.source.updateMemo!(editing.id, text));
+        else if (textChanged || authorChanged) {
+          // 글과 작성자를 한 번에 — 되돌리기도 한 번
+          this.run('updateMemo', () => {
+            if (textChanged) this.source.updateMemo!(editing.id, text);
+            if (authorChanged) this.source.setMemoAuthor!(editing.id, author);
+          });
+        }
       }
     } catch (error) {
       console.warn('[memo] 메모를 저장하지 못했습니다', error);
@@ -314,11 +347,20 @@ export class MemoLayer {
     if (failure) throw failure;
   }
 
-  private async memoAuthor(): Promise<string> {
-    if (this.author === null) {
-      this.author = (await this.source.memoAuthor?.().catch(() => '')) ?? '';
+  /** 새 메모 기본 작성자를 미리 정해 둔다: 마지막으로 쓴 이름 → OS 사용자 이름. */
+  private async loadDefaultAuthor(): Promise<void> {
+    const saved = readAuthorPreference();
+    if (saved !== null) {
+      this.author = saved;
+      return;
     }
-    return this.author;
+    this.author = (await this.source.memoAuthor?.().catch(() => '')) ?? '';
+  }
+
+  private rememberAuthor(author: string): void {
+    if (author === this.author) return;
+    this.author = author;
+    writeAuthorPreference(author);
   }
 
   // ── 그리기 ──────────────────────────────────────────────
@@ -478,6 +520,15 @@ export class MemoLayer {
 
     if (editing) {
       el.classList.add('is-editing');
+      const who = document.createElement('input');
+      who.className = 'hop-memo-author';
+      who.type = 'text';
+      who.value = editing.author;
+      who.placeholder = '작성자';
+      who.title = '작성자 — 새 메모는 마지막으로 쓴 이름이 기본값';
+      who.addEventListener('input', () => {
+        editing.author = who.value;
+      });
       const area = document.createElement('textarea');
       area.className = 'hop-memo-input';
       area.value = editing.value;
@@ -486,7 +537,7 @@ export class MemoLayer {
       area.addEventListener('input', () => {
         editing.value = area.value;
       });
-      area.addEventListener('keydown', (event) => {
+      const onKey = (event: KeyboardEvent) => {
         event.stopPropagation(); // 에디터 단축키로 새지 않게
         if (event.key === 'Escape') {
           event.preventDefault();
@@ -494,7 +545,18 @@ export class MemoLayer {
         } else if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
           event.preventDefault();
           void this.commitEdit();
+        } else if (event.key === 'Enter' && event.target === who) {
+          event.preventDefault();
+          area.focus(); // 작성자 칸에서 Enter → 내용 칸으로
         }
+      };
+      area.addEventListener('keydown', onKey);
+      who.addEventListener('keydown', onKey);
+      who.addEventListener('focus', () => {
+        editing.field = 'author';
+      });
+      area.addEventListener('focus', () => {
+        editing.field = 'text';
       });
       const actions = document.createElement('div');
       actions.className = 'hop-memo-actions';
@@ -502,7 +564,7 @@ export class MemoLayer {
         textButton('취소', () => this.cancelEdit()),
         textButton('저장', () => void this.commitEdit(), true),
       );
-      el.append(area, actions);
+      el.append(who, area, actions);
     } else {
       const body = document.createElement('div');
       body.className = 'hop-memo-text';
@@ -517,7 +579,8 @@ export class MemoLayer {
   /** 다시 그려도 입력 중인 칸의 포커스·커서를 지킨다. */
   private focusEditor(): void {
     if (!this.editing) return;
-    const area = this.columnInner.querySelector<HTMLTextAreaElement>('.hop-memo-input');
+    const selector = this.editing.field === 'author' ? '.hop-memo-author' : '.hop-memo-input';
+    const area = this.columnInner.querySelector<HTMLInputElement | HTMLTextAreaElement>(selector);
     if (!area) return;
     const end = area.value.length;
     area.focus({ preventScroll: true });

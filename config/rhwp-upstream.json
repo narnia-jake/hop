@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "source": "https://github.com/narnia-jake/rhwp",
   "version": "0.8.4",
-  "tag": "v0.8.4-hop.1",
-  "commit": "de621f6e669ef26d2aab25551134717b6271e3d1",
+  "tag": "v0.8.4-hop.2",
+  "commit": "fa94f1b5d563e56d28a495bb5a2e8871cebc7360",
   "rustToolchain": "1.93.1",
   "wasmPackVersion": "0.14.0",
   "cargoPatches": {
